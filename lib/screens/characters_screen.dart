@@ -1,25 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/location_provider.dart';
-import '../widgets/location_card.dart';
+import '../providers/character_provider.dart';
+import '../widgets/character_card.dart';
 import '../widgets/loading_widget.dart';
-import 'location_residents_screen.dart';
+import 'character_detail_screen.dart';
 
-class LocationsScreen extends StatefulWidget {
-  const LocationsScreen({super.key});
+class CharactersScreen extends StatefulWidget {
+  const CharactersScreen({super.key});
 
   @override
-  State<LocationsScreen> createState() => _LocationsScreenState();
+  State<CharactersScreen> createState() => _CharactersScreenState();
 }
 
-class _LocationsScreenState extends State<LocationsScreen> {
+class _CharactersScreenState extends State<CharactersScreen> {
   final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<LocationProvider>().loadLocations(refresh: true);
+      context.read<CharacterProvider>().loadCharacters(refresh: true);
     });
 
     _scrollController.addListener(_onScroll);
@@ -28,9 +28,9 @@ class _LocationsScreenState extends State<LocationsScreen> {
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent * 0.9) {
-      final provider = context.read<LocationProvider>();
+      final provider = context.read<CharacterProvider>();
       if (provider.hasMorePages && !provider.isLoading) {
-        provider.loadLocations();
+        provider.loadCharacters();
       }
     }
   }
@@ -45,16 +45,16 @@ class _LocationsScreenState extends State<LocationsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Localizações'),
-        backgroundColor: Colors.orange,
+        title: const Text('Personagens'),
+        backgroundColor: Colors.blue,
       ),
-      body: Consumer<LocationProvider>(
+      body: Consumer<CharacterProvider>(
         builder: (context, provider, child) {
-          if (provider.locations.isEmpty && provider.isLoading) {
+          if (provider.characters.isEmpty && provider.isLoading) {
             return const LoadingWidget();
           }
 
-          if (provider.error != null && provider.locations.isEmpty) {
+          if (provider.error != null && provider.characters.isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -64,7 +64,7 @@ class _LocationsScreenState extends State<LocationsScreen> {
                   Text('Erro: ${provider.error}', textAlign: TextAlign.center),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: () => provider.loadLocations(refresh: true),
+                    onPressed: () => provider.loadCharacters(refresh: true),
                     child: const Text('Tentar novamente'),
                   ),
                 ],
@@ -73,12 +73,12 @@ class _LocationsScreenState extends State<LocationsScreen> {
           }
 
           return RefreshIndicator(
-            onRefresh: () => provider.loadLocations(refresh: true),
+            onRefresh: () => provider.loadCharacters(refresh: true),
             child: ListView.builder(
               controller: _scrollController,
-              itemCount: provider.locations.length + 1,
+              itemCount: provider.characters.length + 1,
               itemBuilder: (context, index) {
-                if (index == provider.locations.length) {
+                if (index == provider.characters.length) {
                   return provider.isLoading
                       ? const Padding(
                           padding: EdgeInsets.all(16.0),
@@ -87,15 +87,15 @@ class _LocationsScreenState extends State<LocationsScreen> {
                       : const SizedBox.shrink();
                 }
 
-                final location = provider.locations[index];
-                return LocationCard(
-                  location: location,
+                final character = provider.characters[index];
+                return CharacterCard(
+                  character: character,
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) =>
-                            LocationResidentsScreen(location: location),
+                            CharacterDetailScreen(character: character),
                       ),
                     );
                   },
